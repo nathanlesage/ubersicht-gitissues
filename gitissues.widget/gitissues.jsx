@@ -128,7 +128,7 @@ export const updateState = (event, previousState) => {
   return {
     'issues': displayIssues,
     'more': moreIssues,
-    'warning': <p className={infoTag}>Successfully updated.</p>
+    'warning': ''
   }
 }
 
