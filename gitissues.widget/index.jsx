@@ -63,7 +63,8 @@ export const render = (state) => (
       <h1>GitHub Issues for {info.repo.split('/')[1]}</h1>
       {state.warning}
       <table className={table}>
-        {state.issues.map(issue => {
+        {state.displayIssues.map((issue, i) => {
+          if (!issue || !issue.hasOwnProperty('title')) return ''
           return (<tr>
             <td>#{issue.number} </td>
             <td className={row}>
@@ -74,6 +75,7 @@ export const render = (state) => (
         })}
       </table>
       {state.more}
+      {state.lastChecked}
     </div>
   ))
 
@@ -90,17 +92,22 @@ export const initialState = { warning: 'Fetching GitHub data ...' }
  * @return {Object}               The new object containing the processed data.
  */
 export const updateState = (event, previousState) => {
-  if (event.error) {
-    return { ...previousState, warning: <p className={infoTag}>{event.error}</p> }
+  // Reset
+  previousState.warning = ''
+  previousState.moreIssues = ''
+  if (!previousState.displayIssues) previousState.displayIssues = []
+  if (event.error && event.type === 'FETCH_FAILED') {
+    previousState.warning = <p className={infoTag}>{event.error}</p>
+  }
+  if (!event.data || event.data.length === 0) {
+    previousState.warning = <p className={infoTag}>No data.</p>
+    return previousState
   }
   // What we need now is to fetch the issues and display them.
-  let displayIssues = []
-  let moreIssues = ''
   let current = new Date()
-  let lastChecked = 'on ' + `${monNames[current.getMonth()]} ${current.getDate()}, ${current.getFullYear()}, ${current.getHours()}:${current.getMinutes()}`
-  if (!event.data) {
-    return { ...previousState, warning: `No data.` }
-  }
+  let lastChecked = 'Last updated on ' + `${monNames[current.getMonth()]} ${current.getDate()}, ${current.getFullYear()}, ${current.getHours()}:${current.getMinutes()}`
+  // Reset the issues to overwrite old ones
+  previousState.displayIssues = []
   for (let issue of event.data) {
     if (issue.state === 'open') {
       let t = Date.parse(issue.updated_at)
@@ -112,7 +119,7 @@ export const updateState = (event, previousState) => {
         t = new Date(t)
         t = 'on ' + `${monNames[t.getMonth()]} ${t.getDate()}, ${t.getFullYear()}`
       }
-      displayIssues.push({
+      previousState.displayIssues.push({
         'title': issue.title,
         'number': issue.number,
         'url': issue.html_url,
@@ -121,15 +128,12 @@ export const updateState = (event, previousState) => {
       })
     }
   }
-  if (displayIssues.length > 10) {
-    moreIssues = <p className={infoTag}>Last updated {lastChecked}</p>
-    displayIssues = displayIssues.slice(0, 10) // Only leave 10 issues
+  if (previousState.displayIssues.length > 10) {
+    previousState.moreIssues = <p className={infoTag}>Last updated {lastChecked}</p>
+    previousState.displayIssues = previousState.displayIssues.slice(0, 10) // Only leave 10 issues
   }
-  return {
-    'issues': displayIssues,
-    'more': moreIssues,
-    'warning': ''
-  }
+  previousState.lastChecked = <p className={infoTag}>{lastChecked}</p>
+  return previousState
 }
 
 /**
@@ -185,7 +189,7 @@ export const className = {
   top: info.top,
   left: info.left,
   color: '#fff',
-  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  backgroundColor: 'rgba(155, 155, 155, 0.4)',
   borderRadius: 5,
   padding: 10,
   fontSize: 11,
