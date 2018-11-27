@@ -63,16 +63,18 @@ export const render = (state) => (
       <h1>GitHub Issues for {info.repo.split('/')[1]}</h1>
       {state.warning}
       <table className={table}>
-        {state.displayIssues.map((issue, i) => {
-          if (!issue || !issue.hasOwnProperty('title')) return ''
-          return (<tr>
-            <td>#{issue.number} </td>
-            <td className={row}>
-              <span>{issue.title}</span><br />
-              <span className={meta}>by {issue.user} {issue.time}</span>
-            </td>
-          </tr>)
-        })}
+        <tbody>
+          {state.displayIssues.map((issue, i) => {
+            if (!issue || !issue.hasOwnProperty('title')) return ''
+            return (<tr key={i}>
+              <td>#{issue.number} </td>
+              <td className={row}>
+                <span>{issue.title}</span><br />
+                <span className={meta}>by {issue.user} {issue.time}</span>
+              </td>
+            </tr>)
+          })}
+        </tbody>
       </table>
       {state.more}
       {state.lastChecked}
