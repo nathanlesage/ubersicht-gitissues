@@ -47,10 +47,10 @@ export const command = (dispatch) => {
 }
 
 /**
- * Time in miliseconds between each refresh. Default is 10.000 (= 10 minutes)
+ * Time in miliseconds between each refresh. Default is 600.000 (= 10 minutes)
  * @type {number}
  */
-export const refreshFrequency = 10000
+export const refreshFrequency = 600000
 
 /**
  * Renders the widget with updated data.
@@ -81,9 +81,15 @@ export const render = (state) => (
 
 /**
  * Initially, display information that the data is currently being fetched.
+ * Preset the rest with initial values
  * @type {Object}
  */
-export const initialState = { warning: 'Fetching GitHub data ...' }
+export const initialState = {
+  warning: <p className={infoTag}>Fetching GitHub Data ...</p>,
+  displayIssues: [],
+  moreIssues: '',
+  lastChecked: ''
+}
 
 /**
  * Processes the data retrieved from the GitHub API.
