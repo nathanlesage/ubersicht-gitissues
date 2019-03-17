@@ -67,17 +67,17 @@ export const render = (state) => (
           {state.displayIssues.map((issue, i) => {
             if (!issue || !issue.hasOwnProperty('title')) return ''
             return (<tr key={i}>
-              <td>#{issue.number} </td>
+              <td className={numberCol}>#{issue.number} </td>
               <td className={row}>
                 <span>{issue.title}</span><br />
                 <span className={meta}>by {issue.user} {issue.time}</span>
               </td>
+              <td><span className={comments}>{issue.comments}</span></td>
             </tr>)
           })}
         </tbody>
       </table>
-      {state.more}
-      {state.lastChecked}
+      <p className={infoTag}>Last Updated {state.lastChecked}</p>
     </div>
   ))
 
@@ -87,7 +87,7 @@ export const render = (state) => (
  * @type {Object}
  */
 export const initialState = {
-  warning: <p className={infoTag}>Fetching GitHub Data ...</p>,
+  warning: <p>Fetching GitHub Data ...</p>,
   displayIssues: [],
   moreIssues: '',
   lastChecked: ''
@@ -132,15 +132,15 @@ export const updateState = (event, previousState) => {
         'number': issue.number,
         'url': issue.html_url,
         'user': issue.user.login,
+        'comments': issue.comments,
+        'labels': issue.labels.map((l) => { return { 'name': l.name, 'color': l.color } }),
         'time': t
       })
     }
   }
-  if (previousState.displayIssues.length > 10) {
-    previousState.moreIssues = <p className={infoTag}>Last updated {lastChecked}</p>
-    previousState.displayIssues = previousState.displayIssues.slice(0, 10) // Only leave 10 issues
-  }
-  previousState.lastChecked = <p className={infoTag}>{lastChecked}</p>
+
+  previousState.displayIssues = previousState.displayIssues.slice(0, 10) // Only leave 10 issues
+  previousState.lastChecked = lastChecked
   return previousState
 }
 
@@ -162,6 +162,25 @@ const row = css({
 })
 
 /**
+ * The issue's number
+ * @type {CSS}
+ */
+const numberCol = css({
+  paddingRight: 10,
+  textAlign: 'right'
+})
+
+const comments = css({
+  textAlign: 'right',
+  backgroundColor: 'rgb(200, 180, 190)',
+  padding: '4px 8px',
+  margin: 2,
+  display: 'inline-block',
+  borderRadius: 5,
+  color: '#333'
+})
+
+/**
  * The CSS style applied to the table.
  * @type {CSS}
  */
@@ -174,7 +193,7 @@ const table = css({
  * @type {CSS}
  */
 const meta = css({
-  color: 'rgb(255, 200, 200)'
+  color: 'rgb(220, 255, 230)'
 })
 
 /**
@@ -186,7 +205,8 @@ const infoTag = css({
   color: '#333',
   padding: 10,
   borderRadius: 5,
-  marginTop: 15
+  marginTop: 15,
+  textAlign: 'center'
 })
 
 /**
@@ -196,10 +216,11 @@ const infoTag = css({
 export const className = {
   top: info.top,
   left: info.left,
+  width: 400,
   color: '#fff',
-  backgroundColor: 'rgba(155, 155, 155, 0.4)',
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
   borderRadius: 5,
-  padding: 10,
+  padding: 15,
   fontSize: 11,
   fontFamily: 'Helvetica'
 }
