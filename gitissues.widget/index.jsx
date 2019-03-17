@@ -67,7 +67,7 @@ export const render = (state) => (
           {state.displayIssues.map((issue, i) => {
             if (!issue || !issue.hasOwnProperty('title')) return ''
             return (<tr key={i}>
-              <td className={numberCol}>#{issue.number} </td>
+              <td className={numberCol}>{issue.number} </td>
               <td className={row}>
                 <span>{issue.title}</span><br />
                 <span className={meta}>by {issue.user} {issue.time}</span>
@@ -185,7 +185,8 @@ const comments = css({
  * @type {CSS}
  */
 const table = css({
-  borderCollapse: 'separate'
+  borderCollapse: 'separate',
+  width: '100%'
 })
 
 /**
