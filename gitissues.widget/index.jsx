@@ -77,7 +77,7 @@ export const render = (state) => (
           })}
         </tbody>
       </table>
-      <p className={infoTag}>Last Updated {state.lastChecked}</p>
+      <p className={infoTag}>{state.lastChecked}</p>
     </div>
   ))
 
@@ -113,16 +113,22 @@ export const updateState = (event, previousState) => {
   }
   // What we need now is to fetch the issues and display them.
   let current = new Date()
-  let lastChecked = 'Last updated on ' + `${monNames[current.getMonth()]} ${current.getDate()}, ${current.getFullYear()}, ${current.getHours()}:${current.getMinutes()}`
+  let lastChecked = 'Last updated on ' + `${monNames[current.getMonth()]} ${current.getDate()}, ${current.getFullYear()}, ${current.getHours()}:${String(current.getMinutes()).padStart(2, "0")}`
   // Reset the issues to overwrite old ones
   previousState.displayIssues = []
   for (let issue of event.data) {
-    if (issue.state === 'open') {
+    if (issue.state === 'open') { 
       let t = Date.parse(issue.updated_at)
-      if (Date.now() - t < 86400000) {
-        t = 'yesterday'
-      } else if (Date.now() - t < 604800000) {
-        t = 'last week'
+      let now = Date.now()
+      let elapsed = now - t
+      if (elapsed < 86400000) {
+        if (elapsed < 3600000){
+          t = Math.floor(elapsed / 60000) + " Minute(s) ago"
+        } else {
+          t = Math.floor(elapsed / 3600000) + " Hour(s) ago"
+        }
+      } else if (elapsed < 604800000) {
+        t = 'Within last week'
       } else {
         t = new Date(t)
         t = 'on ' + `${monNames[t.getMonth()]} ${t.getDate()}, ${t.getFullYear()}`
