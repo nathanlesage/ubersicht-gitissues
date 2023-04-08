@@ -140,11 +140,13 @@ export const updateState = (event, previousState) => {
         'user': issue.user.login,
         'comments': issue.comments,
         'labels': issue.labels.map((l) => { return { 'name': l.name, 'color': l.color } }),
-        'time': t
+        'time': t,
+        'elapsed': elapsed
       })
     }
   }
 
+  previousState.displayIssues = previousState.displayIssues.sort((e1, e2) => (e1.elapsed > e2.elapsed) ? 1 : (e1.elapsed < e2.elapsed) ? -1 : 0)
   previousState.displayIssues = previousState.displayIssues.slice(0, 10) // Only leave 10 issues
   previousState.lastChecked = lastChecked
   return previousState
