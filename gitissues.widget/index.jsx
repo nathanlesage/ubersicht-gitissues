@@ -70,14 +70,14 @@ export const render = (state) => (
               <td className={numberCol}>{issue.number} </td>
               <td className={row}>
                 <span>{issue.title}</span><br />
-                <span className={meta}>by {issue.user} {issue.time}</span>
+                <span className={meta}>by {issue.user} | Created: {issue.issueCreated} | Last activity: {issue.issueUpdated}</span>
               </td>
               <td><span className={comments}>{issue.comments}</span></td>
             </tr>)
           })}
         </tbody>
       </table>
-      <p className={infoTag}>Last Updated {state.lastChecked}</p>
+      <p className={infoTag}>{state.lastChecked}</p>
     </div>
   ))
 
@@ -113,19 +113,28 @@ export const updateState = (event, previousState) => {
   }
   // What we need now is to fetch the issues and display them.
   let current = new Date()
-  let lastChecked = 'Last updated on ' + `${monNames[current.getMonth()]} ${current.getDate()}, ${current.getFullYear()}, ${current.getHours()}:${current.getMinutes()}`
+  let lastCheckedHours = String(current.getHours()).padStart(2, "0")
+  let lastCheckedMinutes = String(current.getMinutes()).padStart(2, "0")
+  let lastChecked = 'Last updated on ' + `${monNames[current.getMonth()]} ${current.getDate()}, ${current.getFullYear()}, ${lastCheckedHours}:${lastCheckedMinutes}`
   // Reset the issues to overwrite old ones
   previousState.displayIssues = []
   for (let issue of event.data) {
     if (issue.state === 'open') {
-      let t = Date.parse(issue.updated_at)
-      if (Date.now() - t < 86400000) {
-        t = 'yesterday'
-      } else if (Date.now() - t < 604800000) {
-        t = 'last week'
+      let issueCreated = new Date(issue.created_at).toLocaleDateString()
+      let issueUpdated = Date.parse(issue.updated_at)
+      let now = Date.now()
+      let timeDelta = now - issueUpdated
+      if (timeDelta < 86_400_000) {
+        if (timeDelta < 3_600_000){
+          issueUpdated = Math.floor(timeDelta / 60_000) + " Minute(s) ago"
+        } else {
+          issueUpdated = Math.floor(timeDelta / 3_600_000) + " Hour(s) ago"
+        }
+      } else if (timeDelta < 604_800_000) {
+        issueUpdated = 'Within last week'
       } else {
-        t = new Date(t)
-        t = 'on ' + `${monNames[t.getMonth()]} ${t.getDate()}, ${t.getFullYear()}`
+        issueUpdated = new Date(issueUpdated)
+        issueUpdated = 'on ' + `${monNames[issueUpdated.getMonth()]} ${issueUpdated.getDate()}, ${issueUpdated.getFullYear()}`
       }
       previousState.displayIssues.push({
         'title': issue.title,
@@ -134,11 +143,14 @@ export const updateState = (event, previousState) => {
         'user': issue.user.login,
         'comments': issue.comments,
         'labels': issue.labels.map((l) => { return { 'name': l.name, 'color': l.color } }),
-        'time': t
+        'issueCreated': issueCreated,
+        'issueUpdated': issueUpdated,
+        'timeDelta': timeDelta
       })
     }
   }
 
+  previousState.displayIssues = previousState.displayIssues.sort((t1, t2) => t1.timeDelta - t2.timeDelta)
   previousState.displayIssues = previousState.displayIssues.slice(0, 10) // Only leave 10 issues
   previousState.lastChecked = lastChecked
   return previousState
