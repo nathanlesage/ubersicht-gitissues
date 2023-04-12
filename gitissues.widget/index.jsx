@@ -126,9 +126,9 @@ export const updateState = (event, previousState) => {
       let timeDelta = now - issueUpdated
       if (timeDelta < 86_400_000) {
         if (timeDelta < 3_600_000){
-          issueUpdated = Math.floor(elapsed / 60_000) + " Minute(s) ago"
+          issueUpdated = Math.floor(timeDelta / 60_000) + " Minute(s) ago"
         } else {
-          issueUpdated = Math.floor(elapsed / 3_600_000) + " Hour(s) ago"
+          issueUpdated = Math.floor(timeDelta / 3_600_000) + " Hour(s) ago"
         }
       } else if (timeDelta < 604_800_000) {
         issueUpdated = 'Within last week'
